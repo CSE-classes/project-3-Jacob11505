@@ -73,6 +73,39 @@ void *sub_string(void *threadid) 	/*each process searches in the string with the
 	/*the (n1-n2)th char which is the last possible beginning of the substring*/
 {
 
+        int id = (int)threadid;
+        int start = id * nlocal;
+        int end = start + nlocal;
+        int i, j, k;
+        int count;
+        int local_total = 0;
+
+        if (id == NUM_THREADS - 1) {
+                end = n1 - n2 + 1;
+        }
+
+        for (i = start; i < end && i <= n1 - n2; i++) {
+                count = 0;
+
+                for (j = i, k = 0; k < n2; j++, k++) {
+                        if (*(s1 + j) != *(s2 + k)) {
+                                break;
+                        } else {
+                                count++;
+                        }
+
+                        if (count == n2) {
+                                local_total++;
+                        }
+                }
+        }
+
+        pthread_mutex_lock(&total_lock);
+        total += local_total;
+        pthread_mutex_unlock(&total_lock);
+
+        pthread_exit(NULL);
+
 }
 
 
